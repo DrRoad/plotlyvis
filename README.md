@@ -55,6 +55,9 @@ with(df,
 > While this package aims to provide an easy to use interface to plotly, advanced users might consider using the [plotly package](https://github.com/ropensci/plotly) directly due to its sheer flexibility.  
 
 ## Example use cases
+
+Currently only scatterplots are supported. 
+
 ### Scatterplot
 ```r
 library(plotlyvis)
