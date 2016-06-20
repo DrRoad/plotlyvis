@@ -1,0 +1,12 @@
+Package: plotlyvis
+Type: Package
+Title: Create visually appealing charts using Plotly's R-API (plotly package) with an easy to use interface
+Version: 0.1.0
+Authors@R: person("Riddhiman", "Roy", email = "riddhiman.roy@gmail.com", role = c("aut", "cre"))
+Description: The package provides wrapper functions for plot_ly() (from the plotly package) to help make presentation worthy 
+			 charts with minimal effort.
+License: MIT + file LICENSE
+Depends: R (>= 3.0.0)
+Imports: plotly(<= 3.6.5), magrittr(>= 1.5.0), stats
+LazyData: true
+RoxygenNote: 5.0.1
