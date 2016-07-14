@@ -7,6 +7,6 @@ Description: The package provides wrapper functions for plot_ly() (from the plot
 			 charts with minimal effort.
 License: MIT + file LICENSE
 Depends: R (>= 3.0.0)
-Imports: plotly(<= 3.6.5), magrittr(>= 1.5.0), stats
+Imports: plotly(>= 3.6.5), magrittr(>= 1.5.0), stats
 LazyData: true
 RoxygenNote: 5.0.1
