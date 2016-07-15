@@ -10,7 +10,7 @@ scatterplotly(x, y, xlab = NULL, ylab = NULL, theme, groupcolor, groupsize,
   desc.y = 0.2, desc.size = 12, desc.fontface = "arial", markersize = 5,
   markeropacity = 0.8, markertype = "circle", markerlinewidth = 1,
   markerlinecolor = "black", width = NULL, height = NULL,
-  xaxis.range = NULL, yaxis.range = NULL, ...)
+  xaxis.range = NULL, yaxis.range = NULL, legendorientation = "v", ...)
 }
 \arguments{
 \item{x}{A vector of x-coordinates}
@@ -64,6 +64,8 @@ scatterplotly(x, y, xlab = NULL, ylab = NULL, theme, groupcolor, groupsize,
 \item{xaxis.range}{xaxis limits (a numeric vector of size two specifying lower and upper limits)}
 
 \item{yaxis.range}{yaxis limits (a numeric vector of size two specifying lower and upper limits)}
+
+\item{legendorientation}{specify the location of the legend ("v" or "h)}
 
 \item{...}{Other arguments that can be passed to plot_ly()}
 }
