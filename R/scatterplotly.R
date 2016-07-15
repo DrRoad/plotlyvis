@@ -53,6 +53,7 @@
 #' @param height  Canvas height (default: 600)
 #' @param xaxis.range  xaxis limits (a numeric vector of size two specifying lower and upper limits)
 #' @param yaxis.range  yaxis limits (a numeric vector of size two specifying lower and upper limits)
+#' @param legendorientation Specify the location of the legend ("v" or "h)
 #' @param ... Other arguments that can be passed to plot_ly()
 #'
 #' @importFrom stats rnorm
@@ -105,7 +106,9 @@ scatterplotly <- function(x, y, xlab = NULL, ylab = NULL,
                           width = NULL,
                           height = NULL,
                           xaxis.range = NULL,
-                          yaxis.range = NULL, ...){
+                          yaxis.range = NULL,
+                          legendorientation = "v",
+                          ...){
 
   # Help plot -----------------------------------------------------------------
   # If both x and y are missing show a help plot
@@ -113,7 +116,7 @@ scatterplotly <- function(x, y, xlab = NULL, ylab = NULL,
 
   if (missing(x) && missing(y)) {
     set.seed(123)
-    p <- scatterplotlyhelp(x = round(rnorm(100),2), y = round(rnorm(100), 2))
+    p <- scatterplotlyhelp()
     print(p)
     return("No data provided. Showing help instead...")
   }
@@ -149,7 +152,7 @@ scatterplotly <- function(x, y, xlab = NULL, ylab = NULL,
 
   if (is.null(ylab)) {
     ylab <- paste0("<b>", deparse(substitute(y)), "</b><br>",
-                   "<sup> Type:", class(x), "</sup>")
+                   "<sup> Type:", class(y), "</sup>")
   }
 
   # Create hoverinfo ----------------------------------------------------------
@@ -161,39 +164,68 @@ scatterplotly <- function(x, y, xlab = NULL, ylab = NULL,
     paste0("<b>x:</b> ", x, "<br>",
            "<b>y:</b> ", y, "<br>")}
 
+  if (!missing(groupsize)) {
+    hovertxt <- paste0(hovertxt, "<b>Size:</b>", groupsize)
+  }
+
   # Create plot ---------------------------------------------------------------
   # Create colorbar only if input is numeric
   if (!missing(groupcolor)) {
-    if (is.numeric(groupcolor)){
+    if (is.numeric(groupcolor)) {
       colorbarlist <-  list(title = deparse(substitute(groupcolor)))
     }else{
-      colorbarlist <-  NULL
+      colorbarlist <-  NA
     }
 
   }else{
-    colorbarlist <- NULL
+    colorbarlist <- NA
   }
 
+  # Create markerlist based on inputs
+  markerlist <- list(line = list(width = markerlinewidth, color = markerlinecolor),
+                     opacity = markeropacity,
+                     colorbar = colorbarlist)
+
+  #if(!missing(groupsize))markerlist$size <- markerSizeScale(groupsize, maxScale = maxMarkerSize)
+  if (missing(groupsize)) markerlist$size <- markersize
+  if (missing(groupsymbol)) markerlist$symbol <- markertype
+
+  # Change x and y axis domains
+  if (legendorientation != "v" && legendorientation != "h") {
+    stop('legendorientation must be either "v" (vertical) or "h" (horizontal)')
+  }
+
+  if (legendorientation == "v") {
+    xaxis.domain = c(0, 1)
+    yaxis.domain = c(0.01, 0.9)
+  }
+
+  if (legendorientation == "h") {
+    xaxis.domain = c(0, 0.97)
+    yaxis.domain = c(0.05, 0.9)
+  }
+
+  # Plot
   p <- plotly::plot_ly(x = x, y = y,
                        color = groupcolor,
                        size = groupsize,
                        symbol = groupsymbol,
                        type = "scatter",
                        mode = "markers",
-                       marker = list(size = markersize,
-                                     symbol = markertype,
-                                     line = list(width = markerlinewidth, color = markerlinecolor),
-                                     opacity = markeropacity,
-                                     colorbar = colorbarlist),
+                       marker = markerlist,
                        hoverinfo = "text",
                        text = hovertxt, ...) %>%
 
-    plotly::layout(xaxis = list(title = xlab, range = xaxis.range),
-                   yaxis = list(title = ylab, domain = c(0.01, 0.9), range = yaxis.range),
+    plotly::layout(xaxis = list(title = xlab, range = xaxis.range, domain = xaxis.domain),
+                   yaxis = list(title = ylab, domain = yaxis.domain, range = yaxis.range),
                    font = list(family = "arial"),
 
                    #margin = list(b = 0, t = 0, l = 0, r = 0),
                    width = width, height = height,
+
+                   #Legend options
+                   legend = list(orientation = legendorientation,
+                                 bgcolor = "transparent"),
 
                    annotations = list(
                      # Title and sub-title
@@ -225,59 +257,21 @@ scatterplotly <- function(x, y, xlab = NULL, ylab = NULL,
 
 # Scatterplotly help plot
 # Just a visual way to relay all the important arguments
-scatterplotlyhelp <- function(x, y){
+scatterplotlyhelp <- function(scalefactor = 5){
 
-  # Initialize parameters and arguments
-  groupcolor <- sample(LETTERS[1:2], size = length(x), replace = T)
-  groupsymbol <- sample(letters[1:2], size = length(x), replace = T)
-  groupsize <- sample(1:length(x), size = length(x))
-  markersize <- 5
-  markertype <- "circle"
-  markerlinewidth <- 1
-  hovertxt <- paste0(
-    "<b>x:</b> ", x, "<br>",
-    "<b>y:</b> ", y, "<br>",
-    "<b>Color:</b> ", groupcolor, "<br>")
-
-  title = "Title here..."
-  subtitle = "Subtitle here..."
-  title.size = 25
-  description = "Description can be<br>inserted here..."
-  desc.x = 0.8
-  desc.y = 0.2
-  desc.size = 18
-  markersize = 5
-  markertype = "circle"
-  markerlinewidth = 1
-  width = 800
-  height = 600
-
-  # Labels
-  xlab <- paste0("<b>", deparse(substitute(x)), "</b><br>",
-                 "<sup> Type:", class(x), "</sup>")
-
-  ylab <- paste0("<b>", deparse(substitute(y)), "</b><br>",
-                 "<sup> Type:", class(x), "</sup>")
-
-
-  # Plot
-  p <- plotly::plot_ly(x = x, y = y,
-                       color = groupcolor,
-                       size = groupsize,
-                       symbol = groupsymbol,
+  p <- plotly::plot_ly(x = rnorm(500), y = rnorm(500),
+                       color = sample(LETTERS[1:2], size = 100, replace = T),
+                       symbol = sample(letters[1:2], size = 100, replace = T),
+                       type = "scatter",
                        mode = "markers",
-                       marker = list(size = markersize,
-                                     symbol = markertype,
-                                     line = list(width = markerlinewidth)),
-                       hoverinfo = "text",
-                       text = hovertxt) %>%
+                       marker = list(size = sample(1:5, size = 100, replace = T) * scalefactor,
+                                     line = list(width = 1, color = "black"),
+                                     opacity = 0.7),
+                       hoverinfo = "none") %>%
 
-    plotly::layout(xaxis = list(title = xlab),
-                   yaxis = list(title = ylab, domain = c(0.01, 0.9)),
+    plotly::layout(xaxis = list(title = "X-Axis"),
+                   yaxis = list(title = "Y-Axis", domain = c(0.01, 0.9)),
                    font = list(family = "arial"),
-
-                   #margin = list(b = 0, t = 0, l = 0, r = 0),
-                   width = width, height = height,
 
                    annotations = list(
                      # Title and sub-title
@@ -286,17 +280,18 @@ scatterplotlyhelp <- function(x, y){
                           showarrow = F,
                           x = 0, y = 1.05,
                           align = "left",
-                          font = list(size = title.size, family = "Times New Roman"),
-                          text = paste0("<b>", title, "</b><br><sup>", subtitle, "</sup>")),
+                          font = list(size = 30, family = "Times New Roman"),
+                          text = paste0("<b>", "Title here...", "</b><br><sup>",
+                                        "Subtitle here...", "</sup>")),
 
                      # Description
                      list(xref = "paper", yref = "paper",
                           xanchor = "left", yanchor = "top",
                           showarrow = F,
-                          x = desc.x, y = desc.y,
+                          x = 0.8, y = 0.2,
                           align = "left",
-                          font = list(size = desc.size, family = "arial"),
-                          text = paste0(description)),
+                          font = list(size = 12, family = "arial"),
+                          text = paste0("Description can be<br>inserted here...")),
 
                      # Help annotations
                      list(xref = "paper", yref = "paper",
